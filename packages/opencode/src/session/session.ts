@@ -273,6 +273,10 @@ export const ForkInput = Schema.Struct({
   sessionID: SessionID,
   messageID: Schema.optional(MessageID),
 })
+export const MergeInput = Schema.Struct({
+  targetID: SessionID,
+  sourceID: SessionID,
+})
 export const GetInput = SessionID
 export const ChildrenInput = SessionID
 export const RemoveInput = SessionID
@@ -510,6 +514,7 @@ export interface Interface {
   }) => Effect.Effect<Info>
   // kilocode_change end
   readonly fork: (input: { sessionID: SessionID; messageID?: MessageID }) => Effect.Effect<Info, NotFound>
+  readonly merge: (input: { targetID: SessionID; sourceID: SessionID }) => Effect.Effect<Info, NotFound>
   readonly touch: (sessionID: SessionID) => Effect.Effect<void>
   readonly get: (id: SessionID) => Effect.Effect<Info, NotFound>
   readonly setTitle: (input: { sessionID: SessionID; title: string }) => Effect.Effect<void>
@@ -885,6 +890,7 @@ export const layer: Layer.Layer<
           yield* updatePart(p)
         }
       }
+<<<<<<< HEAD
       // kilocode_change - preserve imported/cumulative diffs when forking (self-contained Storage runtime keeps this shared file off the legacy Storage layer)
       yield* carryForkDiff(input.sessionID, session.id)
       return session
@@ -1054,6 +1060,7 @@ export const layer: Layer.Layer<
       listGlobal,
       create,
       fork,
+      merge,
       touch,
       get,
       setTitle,

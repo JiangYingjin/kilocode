@@ -9476,6 +9476,33 @@ export type SessionForkResponses = {
 
 export type SessionForkResponse = SessionForkResponses[keyof SessionForkResponses]
 
+export type SessionMergeData = {
+  body?: {
+    sourceID: string
+  }
+  path: {
+    sessionID: string
+  }
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/session/{sessionID}/merge"
+}
+
+export type SessionMergeErrors = {
+  400: BadRequestError
+  404: NotFoundError
+}
+
+export type SessionMergeError = SessionMergeErrors[keyof SessionMergeErrors]
+
+export type SessionMergeResponses = {
+  200: Session
+}
+
+export type SessionMergeResponse = SessionMergeResponses[keyof SessionMergeResponses]
+
 export type SessionAbortData = {
   body?: never
   path: {

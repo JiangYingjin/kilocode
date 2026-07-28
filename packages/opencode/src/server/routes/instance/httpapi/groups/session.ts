@@ -57,6 +57,11 @@ export const UpdatePayload = Schema.Struct({
   ),
 })
 export const ForkPayload = Schema.Struct(Struct.omit(Session.ForkInput.fields, ["sessionID"]))
+// kilocode_change start - merge payload
+export const MergePayload = Schema.Struct({
+  sourceID: SessionID,
+})
+// kilocode_change end
 export const InitPayload = Schema.Struct({
   modelID: ModelV2.ID,
   providerID: ProviderV2.ID,
@@ -101,6 +106,9 @@ export const SessionPaths = {
   remove: `${root}/:sessionID`,
   update: `${root}/:sessionID`,
   fork: `${root}/:sessionID/fork`,
+  // kilocode_change start
+  merge: `${root}/:sessionID/merge`,
+  // kilocode_change end
   abort: `${root}/:sessionID/abort`,
   share: `${root}/:sessionID/share`,
   init: `${root}/:sessionID/init`,
@@ -264,6 +272,21 @@ export const SessionApi = HttpApi.make("session")
             description: "Create a new session by forking an existing session at a specific message point.",
           }),
         ),
+        // kilocode_change start - merge endpoint
+        HttpApiEndpoint.post("merge", SessionPaths.merge, {
+          params: { sessionID: SessionID },
+          query: WorkspaceRoutingQuery,
+          payload: MergePayload,
+          success: described(Session.Info, "200"),
+          error: [HttpApiError.BadRequest, ApiNotFoundError],
+        }).annotateMerge(
+          OpenApi.annotations({
+            identifier: "session.merge",
+            summary: "Merge session",
+            description: "Merge a forked session's new messages back into its parent session.",
+          }),
+        ),
+        // kilocode_change end
         HttpApiEndpoint.post("abort", SessionPaths.abort, {
           params: { sessionID: SessionID },
           query: WorkspaceRoutingQuery,

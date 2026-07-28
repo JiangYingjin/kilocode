@@ -130,6 +130,7 @@ const sessionBindingCommands = [
   "session.rename",
   "session.timeline",
   "session.fork",
+  "session.merge", // kilocode_change
   "session.compact",
   "session.unshare",
   "session.undo",
@@ -631,6 +632,40 @@ export function Session() {
         ))
       },
     },
+    // kilocode_change start - merge command
+    {
+      title: "Merge fork into parent",
+      value: "session.merge",
+      category: "Session",
+      slash: {
+        name: "merge",
+      },
+      run: () => {
+        const sid = route.sessionID
+        const meta = session()?.metadata as Record<string, unknown> | undefined
+        const parentID = meta?.forkedFromParent as string | undefined
+        if (!parentID) return
+        dialog.replace(() => (
+          <DialogConfirm
+            title="Merge into parent?"
+            message="This will append all new messages from this fork into the parent session."
+            onConfirm={async () => {
+              try {
+                await sdk.client.session.merge({ sessionID: parentID, sourceID: sid })
+                dialog.clear()
+                navigate({ type: "session", sessionID: parentID })
+              } catch (err) {
+                dialog.clear()
+                dialog.replace(() => (
+                  <DialogAlert title="Merge failed" message={String(err)} />
+                ))
+              }
+            }}
+          />
+        ))
+      },
+    },
+    // kilocode_change end
     {
       title: "Fork session",
       value: "session.fork",

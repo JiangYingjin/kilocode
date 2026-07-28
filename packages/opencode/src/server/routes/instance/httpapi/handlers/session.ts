@@ -32,6 +32,7 @@ import {
   ForkPayload,
   InitPayload,
   ListQuery,
+  MergePayload, // kilocode_change
   MessagesQuery,
   PermissionResponsePayload,
   PromptPayload,
@@ -221,6 +222,20 @@ export const sessionHandlers = HttpApiBuilder.group(InstanceHttpApi, "session", 
     })
 
     const forkRaw = KiloSessionHttpApi.forkRaw(fork) // kilocode_change - carry upstream bodyless full-session fork support
+
+    // kilocode_change start - merge handler
+    const merge = Effect.fn("SessionHttpApi.merge")(function* (ctx: {
+      params: { sessionID: SessionID }
+      payload: typeof MergePayload.Type
+    }) {
+      return yield* SessionError.mapStorageNotFound(
+        session.merge({
+          targetID: ctx.params.sessionID,
+          sourceID: ctx.payload.sourceID,
+        }),
+      )
+    })
+    // kilocode_change end
 
     const abort = Effect.fn("SessionHttpApi.abort")(function* (ctx: { params: { sessionID: SessionID } }) {
       yield* promptSvc.cancel(ctx.params.sessionID)
@@ -449,6 +464,7 @@ export const sessionHandlers = HttpApiBuilder.group(InstanceHttpApi, "session", 
       .handle("remove", remove)
       .handle("update", update)
       .handleRaw("fork", forkRaw) // kilocode_change - carry upstream bodyless full-session fork support
+      .handle("merge", merge) // kilocode_change
       .handle("abort", abort)
       .handle("init", init)
       .handle("share", share)
