@@ -12,6 +12,7 @@ export type SessionRoute = {
   type: "session"
   sessionID: string
   prompt?: PromptInfo
+  forkReplace?: boolean // kilocode_change
 }
 
 // kilocode_change start

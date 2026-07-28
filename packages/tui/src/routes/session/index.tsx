@@ -130,7 +130,6 @@ const sessionBindingCommands = [
   "session.rename",
   "session.timeline",
   "session.fork",
-  "session.fork_replace", // kilocode_change
   "session.merge", // kilocode_change
   "session.compact",
   "session.unshare",
@@ -446,6 +445,7 @@ export function Session() {
     if (seeded || !route.prompt || !r) return
     seeded = true
     r.set(route.prompt)
+    if (route.forkReplace) setTimeout(() => r.submit(), 100) // kilocode_change
   }
   const keymap = useOpencodeKeymap()
   const dialog = useDialog()
@@ -689,8 +689,39 @@ export function Session() {
         ))
       },
     },
+    // kilocode_change start - fork at last user message and replace
     {
-      title: "Compact session",
+      title: "Fork and replace last user message",
+      value: "session.fork_replace",
+      category: "Session",
+      hidden: true,
+      run: async () => {
+        const inputText = prompt?.current?.input ?? ""
+        if (!inputText.trim()) { toast.show({ message: "fork_replace: no input text", variant: "warning" }); return }
+
+        const msgs = messages()
+        const lastUser = msgs.findLast((x) => x.role === "user")
+        if (!lastUser) { toast.show({ message: "fork_replace: no user message", variant: "warning" }); return }
+
+        try {
+          const result = await sdk.client.session.fork({
+            sessionID: route.sessionID,
+            messageID: lastUser.id,
+          })
+          navigate({
+            type: "session",
+            sessionID: result.data!.id,
+            prompt: { input: inputText, parts: [] as PromptInfo["parts"] },
+            forkReplace: true,
+          })
+        } catch {
+          toast.show({ message: "Failed to fork session", variant: "error" })
+        }
+        dialog.clear()
+      },
+    },
+    // kilocode_change end
+    {
       value: "session.compact",
       category: "Session",
       slash: {
@@ -996,7 +1027,11 @@ export function Session() {
       value: "session.message.next",
       category: "Session",
       hidden: true,
-      run: () => scrollToMessage("next", dialog),
+      run: () => {
+        const targetID = findNextVisibleMessage("next")
+        if (!targetID) { toBottom(); dialog.clear(); return }
+        scrollToMessage("next", dialog)
+      },
     },
     {
       title: "Previous message",
@@ -1264,6 +1299,9 @@ export function Session() {
   useBindings(() => ({
     commands: sessionCommands(),
   }))
+  // kilocode_change start - alt+r+r to undo previous message
+  const [undoPress, setUndoPress] = createSignal(0)
+  // kilocode_change end
 
   useBindings(() => ({
     bindings: tuiConfig.keybinds.gather("session.global", sessionGlobalBindingCommands),
@@ -1276,8 +1314,61 @@ export function Session() {
 
   useBindings(() => ({
     mode: KILO_BASE_MODE,
-    bindings: tuiConfig.keybinds.gather("session", sessionBindingCommands),
+    bindings: [
+      ...tuiConfig.keybinds.gather("session", sessionBindingCommands),
+      // kilocode_change start - fork at last user message and replace
+      {
+        key: "ctrl+alt+p",
+        desc: "Fork at last user message and replace (ctrl+alt+t)",
+        group: "Session",
+        cmd: async () => {
+          const inputText = prompt?.current?.input ?? ""
+          if (!inputText.trim()) return
+
+          const msgs = messages()
+          const lastUser = msgs.findLast((x) => x.role === "user")
+          if (!lastUser) return
+
+          try {
+            const result = await sdk.client.session.fork({
+              sessionID: route.sessionID,
+              messageID: lastUser.id,
+            })
+            navigate({
+              type: "session",
+              sessionID: result.data!.id,
+              prompt: { input: inputText, parts: [] as PromptInfo["parts"] },
+              forkReplace: true,
+            })
+          } catch {
+            toast.show({ message: "Failed to fork session", variant: "error" })
+          }
+          dialog.clear()
+        },
+      },
+      // kilocode_change end
+      // kilocode_change start - alt+r+r to undo previous message
+      {
+        key: "alt+r",
+        desc: "Undo previous message (press twice)",
+        group: "Session",
+        cmd: (ctx: any) => {
+          const event: any = ctx.event ?? ctx
+          event.preventDefault()
+          event.stopPropagation()
+          const n = undoPress() + 1
+          setUndoPress(n)
+          setTimeout(() => setUndoPress(0), 1000)
+          if (n >= 2) {
+            setUndoPress(0)
+            keymap.dispatchCommand("session.undo")
+          }
+        },
+      },
+      // kilocode_change end
+    ],
   }))
+  // kilocode_change end
 
   useBindings(() => ({
     mode: KILO_BASE_MODE,

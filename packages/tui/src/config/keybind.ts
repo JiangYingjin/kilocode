@@ -87,7 +87,7 @@ export const Definitions = {
   session_list: keybind("ctrl+alt+s,<leader>l", "List all sessions"),
   session_timeline: keybind("<leader>g", "Show session timeline"),
   session_fork: keybind("ctrl+alt+f", "Fork session from message"),
-  session_fork_replace: keybind("alt+p", "Fork at last user message and replace"), // kilocode_change
+  session_fork_replace: keybind("ctrl+alt+p", "Fork at last user message and replace"), // kilocode_change
   session_rename: keybind("ctrl+r", "Rename session"),
   session_delete: keybind("ctrl+d", "Delete session"),
   session_share: keybind("none", "Share current session"),
