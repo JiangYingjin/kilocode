@@ -419,10 +419,9 @@ export function Prompt(props: PromptProps) {
         name: "session.interrupt",
         category: "Session",
         hidden: true,
-        enabled: status().type !== "idle",
+        enabled: true,
         run: () => {
           if (auto()?.visible) return
-          if (!input.focused) return
           // TODO: this should be its own command
           if (store.mode === "shell") {
             setStore("mode", "normal")

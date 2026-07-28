@@ -5,10 +5,11 @@ import { useTheme } from "../../context/theme"
 import { SplitBorder } from "../../ui/border"
 import { Spinner } from "@tui/component/spinner" // kilocode_change
 import { useLocal } from "@tui/context/local" // kilocode_change
+import { useSDK } from "../../context/sdk" // kilocode_change
 import type { AssistantMessage } from "@kilocode/sdk/v2"
 import { Locale } from "../../util/locale"
 import { useTerminalDimensions } from "@opentui/solid"
-import { useCommandShortcut, useOpencodeKeymap } from "../../keymap"
+import { useBindings, useCommandShortcut, useOpencodeKeymap } from "../../keymap" // kilocode_change
 
 export function SubagentFooter() {
   const route = useRouteData("session")
@@ -79,6 +80,33 @@ export function SubagentFooter() {
   const [hover, setHover] = createSignal<"parent" | "prev" | "next" | null>(null)
   useTerminalDimensions()
 
+  // kilocode_change start — Esc+Esc to interrupt this subagent
+  const sdk = useSDK()
+  const [interrupt, setInterrupt] = createSignal(0)
+
+  useBindings(() => ({
+    enabled: isRunning(),
+    bindings: [
+      {
+        key: "escape",
+        desc: "Interrupt subagent",
+        group: "Session",
+        cmd: (ctx: { event: { preventDefault: () => void; stopPropagation: () => void } }) => {
+          ctx.event.preventDefault()
+          ctx.event.stopPropagation()
+          const n = interrupt() + 1
+          setInterrupt(n)
+          setTimeout(() => setInterrupt(0), 5000)
+          if (n >= 2) {
+            setInterrupt(0)
+            void sdk.client.session.abort({ sessionID: route.sessionID }).catch(() => {})
+          }
+        },
+      },
+    ],
+  }))
+  // kilocode_change end
+
   return (
     <box flexShrink={0}>
       <box
@@ -105,6 +133,11 @@ export function SubagentFooter() {
             {/* kilocode_change start */}
             <Show when={isRunning()}>
               <Spinner color={agentColor()} />
+            </Show>
+            <Show when={isRunning()}>
+              <text fg={interrupt() > 0 ? theme.primary : theme.textMuted}>
+                [{interrupt() > 0 ? "Esc again" : "Esc Esc"} to stop]
+              </text>
             </Show>
             {/* kilocode_change end */}
             <Show when={usage()}>
