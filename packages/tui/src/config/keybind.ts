@@ -84,7 +84,7 @@ export const Definitions = {
   session_export: keybind("<leader>x", "Export session to editor"),
   session_copy: keybind("none", "Copy session transcript"),
   session_new: keybind("<leader>n", "Create a new session"),
-  session_list: keybind("<leader>l", "List all sessions"),
+  session_list: keybind("ctrl+alt+s,<leader>l", "List all sessions"),
   session_timeline: keybind("<leader>g", "Show session timeline"),
   session_fork: keybind("none", "Fork session from message"),
   session_rename: keybind("ctrl+r", "Rename session"),
@@ -136,7 +136,7 @@ export const Definitions = {
   messages_half_page_up: keybind("ctrl+alt+u", "Scroll messages up by half page"),
   messages_half_page_down: keybind("ctrl+alt+d", "Scroll messages down by half page"),
   messages_first: keybind("ctrl+g,home", "Navigate to first message"),
-  messages_last: keybind("ctrl+alt+g,end", "Navigate to last message"),
+  messages_last: keybind("ctrl+alt+z,ctrl+alt+g,end", "Navigate to last message"), // kilocode_change
   messages_next: keybind("none", "Navigate to next message"),
   messages_previous: keybind("none", "Navigate to previous message"),
   messages_last_user: keybind("none", "Navigate to last user message"),
