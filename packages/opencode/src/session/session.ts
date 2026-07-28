@@ -2,6 +2,7 @@ import { LayerNode } from "@opencode-ai/core/effect/layer-node"
 import { PermissionV1 } from "@opencode-ai/core/v1/permission"
 import { Slug } from "@opencode-ai/core/util/slug"
 import { SessionV1 } from "@opencode-ai/core/v1/session"
+import { ForkCompleted } from "@opencode-ai/core/session/event" // kilocode_change
 import { serviceUse } from "@opencode-ai/core/effect/service-use"
 import path from "path"
 import { BackgroundJob } from "@/background/job"
@@ -514,7 +515,6 @@ export interface Interface {
   }) => Effect.Effect<Info>
   // kilocode_change end
   readonly fork: (input: { sessionID: SessionID; messageID?: MessageID }) => Effect.Effect<Info, NotFound>
-  readonly merge: (input: { targetID: SessionID; sourceID: SessionID }) => Effect.Effect<Info, NotFound>
   readonly touch: (sessionID: SessionID) => Effect.Effect<void>
   readonly get: (id: SessionID) => Effect.Effect<Info, NotFound>
   readonly setTitle: (input: { sessionID: SessionID; title: string }) => Effect.Effect<void>
@@ -857,7 +857,10 @@ export const layer: Layer.Layer<
         sourceID: input.sessionID, // kilocode_change - forks preserve initialized confinement
         sandboxFallback, // kilocode_change - seed confinement from the source session's original directory
       })
+      // kilocode_change start - batch fork: single transaction for all writes, skip individual events
       const idMap = new Map<string, MessageID>()
+      const batchMessages: Array<typeof MessageTable.$inferInsert> = []
+      const batchParts: Array<typeof PartTable.$inferInsert> = []
 
       for (const msg of msgs) {
         if (input.messageID && msg.info.id >= input.messageID) break
@@ -865,32 +868,61 @@ export const layer: Layer.Layer<
         idMap.set(msg.info.id, newID)
 
         const parentID = msg.info.role === "assistant" && msg.info.parentID ? idMap.get(msg.info.parentID) : undefined
-        const cloned = yield* updateMessage({
+        const clonedInfo = {
           ...msg.info,
           sessionID: session.id,
           id: newID,
-          ...(msg.info.role === "assistant" && { cost: 0 }), // kilocode_change - count only spend incurred after the fork
+          ...(msg.info.role === "assistant" && { cost: 0 }),
           ...(parentID && { parentID }),
+        }
+        const time_created = clonedInfo.time.created
+        const { id: _id, sessionID: _sid, ...rest } = clonedInfo
+
+        batchMessages.push({
+          id: newID,
+          session_id: session.id,
+          time_created,
+          data: rest as Record<string, unknown>,
         })
 
         for (const part of msg.parts) {
-          // kilocode_change - detach task calls + drop transient parts before copying the forked transcript
           const prepared = KiloSession.prepareForkedPart(part)
           if (!prepared) continue
+          const partID = PartID.ascending()
           const p: SessionV1.Part = {
             ...prepared,
-            id: PartID.ascending(),
-            messageID: cloned.id,
+            id: partID,
+            messageID: newID,
             sessionID: session.id,
-            ...(prepared.type === "step-finish" && { cost: 0 }), // kilocode_change - exclude pre-fork spend from model stats
+            ...(prepared.type === "step-finish" && { cost: 0 }),
           }
           if (p.type === "compaction" && p.tail_start_id) {
             p.tail_start_id = idMap.get(p.tail_start_id)
           }
-          yield* updatePart(p)
+          const { id: _pid, messageID: _pmid, sessionID: _psid, ...partRest } = p
+          batchParts.push({
+            id: partID,
+            message_id: newID,
+            session_id: session.id,
+            time_created: Date.now(),
+            data: partRest as Record<string, unknown>,
+          })
         }
       }
-<<<<<<< HEAD
+
+      // Single DB transaction for all message and part writes
+      yield* db.transaction((tx) =>
+        Effect.gen(function* () {
+          if (batchMessages.length) {
+            yield* tx.insert(MessageTable).values(batchMessages).onConflictDoNothing().run().pipe(Effect.orDie)
+          }
+          if (batchParts.length) {
+            yield* tx.insert(PartTable).values(batchParts).onConflictDoNothing().run().pipe(Effect.orDie)
+          }
+        }),
+      ).pipe(Effect.orDie)
+      // kilocode_change end - batch fork
+      yield* events.publish(ForkCompleted, { sessionID: session.id, sourceSessionID: input.sessionID }) // kilocode_change - signal fork completion
       // kilocode_change - preserve imported/cumulative diffs when forking (self-contained Storage runtime keeps this shared file off the legacy Storage layer)
       yield* carryForkDiff(input.sessionID, session.id)
       return session
@@ -1060,7 +1092,6 @@ export const layer: Layer.Layer<
       listGlobal,
       create,
       fork,
-      merge,
       touch,
       get,
       setTitle,

@@ -135,6 +135,9 @@ const appBindingCommands = [
   "app.toggle.diffwrap",
   "app.toggle.paste_summary",
   "app.toggle.session_directory_filter",
+  "session.next", // kilocode_change
+  "session.previous", // kilocode_change
+  "session.fork_replace", // kilocode_change
 ] as const
 
 export type TuiInput = {
@@ -945,6 +948,63 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
           dialog.clear()
         },
       },
+      // kilocode_change start - session navigation
+      {
+        name: "session.next",
+        title: "Next session",
+        category: "Session",
+        hidden: true,
+        run: () => {
+          const allSessions = sync.data.session
+            .filter((x: { parentID?: string }) => x.parentID === undefined)
+            .toSorted((a: { time: { updated: number } }, b: { time: { updated: number } }) => b.time.updated - a.time.updated)
+          if (allSessions.length === 0) { dialog.clear(); return }
+          if (route.data.type !== "session") {
+            route.navigate({ type: "session", sessionID: allSessions[0].id })
+            toast.show({ message: `session 1/${allSessions.length}`, variant: "info" })
+          } else {
+            const idx = allSessions.findIndex((s) => s.id === route.data.sessionID)
+            if (idx >= 0 && idx < allSessions.length - 1) {
+              route.navigate({ type: "session", sessionID: allSessions[idx + 1].id })
+              toast.show({ message: `session ${idx + 2}/${allSessions.length}`, variant: "info" })
+            }
+          }
+          dialog.clear()
+        },
+      },
+      {
+        name: "session.previous",
+        title: "Previous session",
+        category: "Session",
+        hidden: true,
+        run: () => {
+          const allSessions = sync.data.session
+            .filter((x: { parentID?: string }) => x.parentID === undefined)
+            .toSorted((a: { time: { updated: number } }, b: { time: { updated: number } }) => b.time.updated - a.time.updated)
+          if (allSessions.length === 0) { dialog.clear(); return }
+          if (route.data.type !== "session") {
+            route.navigate({ type: "session", sessionID: allSessions[0].id })
+            toast.show({ message: `session 1/${allSessions.length}`, variant: "info" })
+          } else {
+            const idx = allSessions.findIndex((s) => s.id === route.data.sessionID)
+            if (idx > 0) {
+              route.navigate({ type: "session", sessionID: allSessions[idx - 1].id })
+              toast.show({ message: `session ${idx}/${allSessions.length}`, variant: "info" })
+            }
+          }
+          dialog.clear()
+        },
+      },
+      {
+        name: "session.fork_replace",
+        title: "Fork at last user message and replace",
+        category: "Session",
+        hidden: true,
+        run: () => {
+          dialog.clear()
+        },
+      },
+      // kilocode_change end
     ].map((command) => ({
       namespace: "palette",
       ...command,

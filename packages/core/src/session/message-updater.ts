@@ -369,6 +369,7 @@ export function update(adapter: Adapter, event: SessionEvent.Event) {
       "session.next.retried": () => Effect.void,
       "session.next.compaction.started": () => Effect.void,
       "session.next.compaction.delta": () => Effect.void,
+      "session.fork.completed": () => Effect.void, // kilocode_change
       "session.next.compaction.ended": (event) => {
         if (event.data.messageID === undefined || event.data.reason === undefined) return Effect.void // kilocode_change
         return adapter.appendMessage(

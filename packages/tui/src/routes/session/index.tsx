@@ -130,6 +130,7 @@ const sessionBindingCommands = [
   "session.rename",
   "session.timeline",
   "session.fork",
+  "session.fork_replace", // kilocode_change
   "session.merge", // kilocode_change
   "session.compact",
   "session.unshare",

@@ -462,6 +462,13 @@ export const {
           )
           break
         }
+        // kilocode_change start - handle fork completed
+        case "session.fork.completed": {
+          const sessionID = event.properties.sessionID
+          if (!fullSyncedSessions.has(sessionID)) sync.sync(sessionID)
+          break
+        }
+        // kilocode_change end
         case "interactive_terminal.deleted": {
           terminalDeleted.add(event.properties.terminalID)
           const list = store.interactive_terminal[event.properties.sessionID]

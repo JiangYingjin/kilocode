@@ -86,7 +86,8 @@ export const Definitions = {
   session_new: keybind("ctrl+alt+n,<leader>n", "Create a new session"),
   session_list: keybind("ctrl+alt+s,<leader>l", "List all sessions"),
   session_timeline: keybind("<leader>g", "Show session timeline"),
-  session_fork: keybind("none", "Fork session from message"),
+  session_fork: keybind("ctrl+alt+f", "Fork session from message"),
+  session_fork_replace: keybind("alt+p", "Fork at last user message and replace"), // kilocode_change
   session_rename: keybind("ctrl+r", "Rename session"),
   session_delete: keybind("ctrl+d", "Delete session"),
   session_share: keybind("none", "Share current session"),
@@ -297,6 +298,7 @@ export const CommandMap = {
   session_list: "session.list",
   session_timeline: "session.timeline",
   session_fork: "session.fork",
+  session_fork_replace: "session.fork_replace", // kilocode_change
   session_rename: "session.rename",
   session_delete: "session.delete",
   session_share: "session.share",

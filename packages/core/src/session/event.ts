@@ -470,6 +470,17 @@ export namespace Compaction {
   export type Ended = typeof Ended.Type
 }
 
+// kilocode_change start - bulk fork completion event
+export const ForkCompleted = EventV2.define({
+  type: "session.fork.completed",
+  ...options,
+  schema: {
+    sessionID: SessionSchema.ID,
+    sourceSessionID: SessionSchema.ID,
+  },
+})
+// kilocode_change end
+
 const DurableDefinitions = [
   AgentSwitched,
   ModelSwitched,
@@ -497,6 +508,7 @@ const DurableDefinitions = [
   Retried,
   Compaction.Started,
   Compaction.Ended,
+  ForkCompleted, // kilocode_change
 ] as const
 const EphemeralDefinitions = [
   InterruptRequested, // kilocode_change - preserve downgrade-readable durable streams
