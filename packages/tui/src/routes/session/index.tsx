@@ -1311,6 +1311,21 @@ export function Session() {
   // snap to bottom when session changes
   createEffect(on(() => route.sessionID, toBottom))
 
+  // kilocode_change start - disable stickyScroll when user scrolls up
+  // Prevents content-drift jumps from recalculateBarProps → updateStickyState
+  // re-engaging sticky scroll unexpectedly during model output.
+  createEffect(() => {
+    const s = scroll
+    if (!s || s.isDestroyed) return
+    const onChange = (evt: { position: number }) => {
+      if (typeof evt.position !== "number") return
+      scroll.stickyScroll = scroll.isAtStickyPosition()
+    }
+    s.verticalScrollBar.on("change", onChange)
+    onCleanup(() => s.verticalScrollBar.off("change", onChange))
+  })
+  // kilocode_change end
+
   return (
     <PathFormatterProvider path={session()?.directory}>
       <context.Provider
@@ -1495,14 +1510,30 @@ export function Session() {
                     session_id={route.sessionID}
                     visible={visible()}
                     disabled={disabled()}
-                    on_submit={() => {}}
+                    on_submit={() => {
+                      const s = scroll
+                      if (!s || s.isDestroyed) return
+                      const maxPos = s.scrollHeight - s.verticalScrollBar.viewportSize
+                      if (s.scrollTop >= maxPos - 5) {
+                        s.stickyScroll = true
+                        s.scrollTo(s.scrollHeight)
+                      }
+                    }}
                     ref={bind}
                   >
                     <Prompt
                       visible={visible()}
                       ref={bind}
                       disabled={disabled()}
-                      onSubmit={() => {}}
+                      onSubmit={() => {
+                        const s = scroll
+                        if (!s || s.isDestroyed) return
+                        const maxPos = s.scrollHeight - s.verticalScrollBar.viewportSize
+                        if (s.scrollTop >= maxPos - 5) {
+                          s.stickyScroll = true
+                          s.scrollTo(s.scrollHeight)
+                        }
+                      }}
                       sessionID={route.sessionID}
                       directory={session()?.directory}
                       right={<pluginRuntime.Slot name="session_prompt_right" session_id={route.sessionID} />}
