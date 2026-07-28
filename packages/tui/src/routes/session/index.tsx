@@ -1495,16 +1495,14 @@ export function Session() {
                     session_id={route.sessionID}
                     visible={visible()}
                     disabled={disabled()}
-                    on_submit={toBottom}
+                    on_submit={() => {}}
                     ref={bind}
                   >
                     <Prompt
                       visible={visible()}
                       ref={bind}
                       disabled={disabled()}
-                      onSubmit={() => {
-                        toBottom()
-                      }}
+                      onSubmit={() => {}}
                       sessionID={route.sessionID}
                       directory={session()?.directory}
                       right={<pluginRuntime.Slot name="session_prompt_right" session_id={route.sessionID} />}

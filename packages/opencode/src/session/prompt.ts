@@ -1866,14 +1866,6 @@ export const layer = Layer.effect(
               overflow: !handle.message.finish && handle.compactError?.() !== undefined, // kilocode_change
             })
           }
-          // kilocode_change start — break out so a newer queued prompt can take over
-          // instead of starting another LLM step for the now-superseded turn. The
-          // current handle.process has fully drained (tokens + inline tool calls) by
-          // the time we get here, so nothing is cut off.
-          if (KiloSessionPromptQueue.hasFollowup(sessionID)) {
-            closeReasons.set(sessionID, "interrupted")
-            return "break" as const
-          }
           // kilocode_change end
           // kilocode_change start - guard against providers that end the stream
           // without a terminal stop_reason (e.g. an Anthropic-style message_delta
