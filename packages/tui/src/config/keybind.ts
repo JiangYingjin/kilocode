@@ -118,7 +118,7 @@ export const Definitions = {
   stash_delete: keybind("ctrl+d", "Delete stash entry"),
   model_provider_list: keybind("ctrl+a", "Open provider list from model dialog"),
   model_favorite_toggle: keybind("ctrl+f", "Toggle model favorite status"),
-  model_list: keybind("<leader>m", "List available models"),
+  model_list: keybind("ctrl+alt+d,<leader>m", "List available models"), // kilocode_change
   model_cycle_recent: keybind("f2", "Next recently used model"),
   model_cycle_recent_reverse: keybind("shift+f2", "Previous recently used model"),
   model_cycle_favorite: keybind("none", "Next favorite model"),
@@ -136,8 +136,8 @@ export const Definitions = {
   messages_page_down: keybind("pagedown,ctrl+alt+f", "Scroll messages down by one page"),
   messages_line_up: keybind("ctrl+alt+y", "Scroll messages up by one line"),
   messages_line_down: keybind("ctrl+alt+e", "Scroll messages down by one line"),
-  messages_half_page_up: keybind("ctrl+alt+u", "Scroll messages up by half page"),
-  messages_half_page_down: keybind("ctrl+alt+d", "Scroll messages down by half page"),
+  messages_half_page_up: keybind("none", "Scroll messages up by half page"), // kilocode_change - unbound
+  messages_half_page_down: keybind("none", "Scroll messages down by half page"), // kilocode_change - unbound
   messages_first: keybind("ctrl+g,home", "Navigate to first message"),
   messages_last: keybind("ctrl+alt+z,ctrl+alt+g,end", "Navigate to last message"), // kilocode_change
   messages_next: keybind("alt+down,ctrl+alt+]", "Navigate to next user message"),
