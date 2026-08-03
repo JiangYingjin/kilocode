@@ -19,7 +19,6 @@ import { DialogClawSetup } from "./components/dialog-claw-setup.js"
 import { DialogClawUpgrade } from "./components/dialog-claw-upgrade.js"
 import { DialogIndexing } from "./components/dialog-indexing.js"
 import { indexingEnabled } from "./indexing-feature"
-import { refreshBalance } from "./balance-refresh"
 
 // These types are OpenCode-internal and imported at runtime
 type UseSDK = any
@@ -237,9 +236,6 @@ export function registerKiloCommands(useSDK: () => UseSDK) {
                     // Refresh provider state to reload models with new organization context
                     await sdk.client.instance.dispose()
                     await sync.bootstrap()
-
-                    // Update the sidebar balance immediately for the newly selected account
-                    refreshBalance()
 
                     // Show success toast
                     const teamName = orgId
