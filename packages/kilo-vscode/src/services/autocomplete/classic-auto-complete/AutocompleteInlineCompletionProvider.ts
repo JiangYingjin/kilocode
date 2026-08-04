@@ -384,16 +384,7 @@ export class AutocompleteInlineCompletionProvider implements vscode.InlineComple
     // credits are depleted (402), auth is invalid (401/403), or the server
     // is rate-limiting (429) / having issues (5xx).
     if (this.backoff.blocked()) {
-      // For 402 (credits depleted), periodically check the balance endpoint
-      // instead of sending a probe FIM request. If the user has added credits,
-      // reset the backoff so autocomplete resumes.
-      if (this.backoff.getFatalStatus() === 402 && this.backoff.shouldProbe()) {
-        if (await this.hasBalance()) {
-          this.backoff.reset()
-          this.fatalNotified = false
-        }
-      }
-      if (this.backoff.blocked()) return []
+      return []
     }
 
     if (!document?.uri?.fsPath) {
@@ -663,21 +654,6 @@ export class AutocompleteInlineCompletionProvider implements vscode.InlineComple
       if (this.fimAbortControllers.get(scope) === controller) {
         this.fimAbortControllers.delete(scope)
       }
-    }
-  }
-
-  /**
-   * Check the user's credit balance via the profile endpoint.
-   * Returns true if the user has a positive balance, false otherwise.
-   * Returns false on any error (not connected, fetch failed, etc.).
-   */
-  private async hasBalance(): Promise<boolean> {
-    try {
-      const client = await this.connectionService.getClientAsync()
-      const result = await client.kilo.profile().catch(() => null)
-      return (result?.data?.balance?.balance ?? 0) > 0
-    } catch {
-      return false
     }
   }
 }

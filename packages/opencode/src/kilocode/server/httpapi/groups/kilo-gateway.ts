@@ -25,10 +25,6 @@ export const Profile = Schema.Struct({
   hasPersonalAccount: Schema.optional(Schema.Boolean),
 })
 
-export const Balance = Schema.Struct({
-  balance: Schema.Finite,
-})
-
 export const KiloPassState = Schema.Struct({
   currentPeriodBaseCreditsUsd: Schema.Finite,
   currentPeriodUsageUsd: Schema.Finite,
@@ -36,9 +32,8 @@ export const KiloPassState = Schema.Struct({
   nextBillingAt: Schema.optional(Schema.NullOr(Schema.String)),
 })
 
-export const ProfileWithBalance = Schema.Struct({
+export const ProfileResult = Schema.Struct({
   profile: Profile,
-  balance: Schema.NullOr(Balance),
   kiloPass: Schema.NullOr(KiloPassState),
   currentOrgId: Schema.NullOr(Schema.String),
 })
@@ -287,7 +282,7 @@ export const KiloGatewayApi = HttpApi.make("kilo")
       .add(
         HttpApiEndpoint.get("profile", KiloGatewayPaths.profile, {
           query: WorkspaceRoutingQuery,
-          success: described(ProfileWithBalance, "Profile data"),
+          success: described(ProfileResult, "Profile data"),
           error: [HttpApiError.BadRequest, HttpApiError.Unauthorized],
         }).annotateMerge(
           OpenApi.annotations({

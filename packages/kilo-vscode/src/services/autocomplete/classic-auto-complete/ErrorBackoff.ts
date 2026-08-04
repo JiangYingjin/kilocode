@@ -8,8 +8,8 @@
  *
  * When a fatal error (like 402 Payment Required) is detected, autocomplete
  * requests are blocked to prevent thousands of wasted API calls. The caller
- * can periodically check `shouldProbe()` to run a lightweight balance check
- * and call `reset()` if the user has added credits.
+ * can periodically check `shouldProbe()` to run a lightweight probe
+ * and call `reset()` if the user has recovered (e.g. added credits).
  */
 
 /** Base backoff delay in ms for retriable errors */
@@ -24,7 +24,7 @@ const CIRCUIT_THRESHOLD = 5
 /** Duration in ms the circuit stays open before allowing a probe (5 minutes) */
 const CIRCUIT_COOLDOWN_MS = 300_000
 
-/** Interval between balance/auth probe checks for fatal errors (5 minutes) */
+/** Interval between auth/probe checks for fatal errors (5 minutes) */
 const FATAL_PROBE_INTERVAL_MS = 300_000
 
 export type ErrorKind = "fatal" | "retriable" | "transient"
@@ -141,10 +141,10 @@ export class ErrorBackoff {
   }
 
   /**
-   * Whether it's time for a lightweight probe (e.g. balance check) to see if
+   * Whether it's time for a lightweight probe to see if
    * the fatal condition has been resolved. Returns true at most once per
-   * FATAL_PROBE_INTERVAL_MS. The caller should check balance/auth and call
-   * reset() if the condition is cleared.
+   * FATAL_PROBE_INTERVAL_MS. The caller should check the condition and call
+   * reset() if it is cleared.
    */
   shouldProbe(): boolean {
     if (!this.fatal) return false

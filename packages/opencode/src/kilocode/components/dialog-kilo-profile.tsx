@@ -9,11 +9,10 @@ import { useTheme } from "@tui/context/theme"
 import { useDialog } from "@tui/ui/dialog"
 import { Link } from "@tui/ui/link"
 import { TextAttributes } from "@opentui/core"
-import type { KilocodeProfile, KilocodeBalance } from "@kilocode/kilo-gateway"
+import type { KilocodeProfile } from "@kilocode/kilo-gateway"
 
 interface DialogKiloProfileProps {
   profile: KilocodeProfile
-  balance: KilocodeBalance | null
   currentOrgId?: string | null
 }
 
@@ -35,11 +34,6 @@ export function DialogKiloProfile(props: DialogKiloProfileProps) {
 
   const teamDisplay = currentOrg ? `${currentOrg.name} (${currentOrg.role})` : "Personal"
 
-  const balanceDisplay =
-    props.balance && props.balance.balance !== undefined && props.balance.balance !== null
-      ? `$${props.balance.balance.toFixed(2)}`
-      : null
-
   // Generate usage URL based on organization context
   const usageUrl = props.currentOrgId
     ? `https://app.kilo.ai/organizations/${props.currentOrgId}/usage-details`
@@ -57,7 +51,6 @@ export function DialogKiloProfile(props: DialogKiloProfileProps) {
         {props.profile.name && <text fg={theme.text}>Name: {props.profile.name}</text>}
         {props.profile.email && <text fg={theme.text}>Email: {props.profile.email}</text>}
         <text fg={theme.text}>Team: {teamDisplay}</text>
-        {balanceDisplay && <text fg={theme.text}>Balance: {balanceDisplay}</text>}
         <box marginTop={1}>
           <box flexDirection="row">
             <text fg={theme.text}>Usage Details: </text>

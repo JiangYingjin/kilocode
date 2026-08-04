@@ -24,7 +24,6 @@ const loggedInProfile: ProfileData = {
       { id: "org-2", name: "Side Project Inc", role: "member" },
     ],
   },
-  balance: { balance: 42.5 },
   kiloPass: null,
   currentOrgId: null,
 }
@@ -34,7 +33,6 @@ const personalProfile: ProfileData = {
     email: "solo@example.com",
     name: "Solo Dev",
   },
-  balance: { balance: 267.59 },
   kiloPass: {
     currentPeriodBaseCreditsUsd: 199,
     currentPeriodUsageUsd: 73.27,

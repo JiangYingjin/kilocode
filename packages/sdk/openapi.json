@@ -12999,23 +12999,6 @@
                       "required": ["email"],
                       "additionalProperties": false
                     },
-                    "balance": {
-                      "anyOf": [
-                        {
-                          "type": "object",
-                          "properties": {
-                            "balance": {
-                              "type": "number"
-                            }
-                          },
-                          "required": ["balance"],
-                          "additionalProperties": false
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
                     "kiloPass": {
                       "anyOf": [
                         {
@@ -13064,7 +13047,7 @@
                       ]
                     }
                   },
-                  "required": ["profile", "balance", "kiloPass", "currentOrgId"],
+                  "required": ["profile", "kiloPass", "currentOrgId"],
                   "additionalProperties": false,
                   "description": "Profile data"
                 }

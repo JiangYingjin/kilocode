@@ -3,7 +3,7 @@ import { cmd } from "../../../cli/cmd/cmd"
 import { UI } from "../../../cli/ui"
 import { Auth, type Info as AuthInfo } from "../../../auth"
 import { makeRuntime } from "../../../effect/run-service"
-import { fetchBalance, fetchProfile, type KilocodeBalance, type KilocodeProfile } from "@kilocode/kilo-gateway"
+import { fetchProfile, type KilocodeProfile } from "@kilocode/kilo-gateway"
 
 const runtime = makeRuntime(Auth.Service, Auth.defaultLayer)
 
@@ -12,12 +12,10 @@ interface Info {
   email: string
   team: string
   organizationId: string | null
-  balance: number
 }
 
 export function payload(input: {
   profile: KilocodeProfile
-  balance: KilocodeBalance | null
   organizationId?: string | null
 }): Info {
   const org = input.profile.organizations?.find((item) => item.id === input.organizationId)
@@ -26,7 +24,6 @@ export function payload(input: {
     email: input.profile.email,
     team: org?.name ?? "Personal",
     organizationId: input.organizationId ?? null,
-    balance: input.balance?.balance ?? 0,
   }
 }
 
@@ -35,7 +32,6 @@ export function format(info: Info): string {
     ...(info.name ? [`Name: ${info.name}`] : []),
     `Email: ${info.email}`,
     `Team: ${info.team}`,
-    `Balance: $${info.balance.toFixed(2)}`,
   ]
   return lines.join("\n")
 }
@@ -44,7 +40,6 @@ interface Args {
   json: boolean
   getAuth?: (providerID: string) => Promise<AuthInfo | undefined>
   getProfile?: (token: string) => Promise<KilocodeProfile>
-  getBalance?: (token: string, organizationId?: string) => Promise<KilocodeBalance | null>
   error?: (msg: string) => void
   exit?: (code: number) => void
 }
@@ -78,10 +73,7 @@ export async function handle(args: Args) {
   const org = auth.accountId ?? null
   const result = await (async () => {
     try {
-      return await Promise.all([
-        (args.getProfile ?? fetchProfile)(auth.access),
-        (args.getBalance ?? fetchBalance)(auth.access, org ?? undefined),
-      ] as const)
+      return await (args.getProfile ?? fetchProfile)(auth.access)
     } catch (err) {
       error(err instanceof Error ? err.message : String(err))
       exit(1)
@@ -90,8 +82,7 @@ export async function handle(args: Args) {
   })()
   if (!result) return
 
-  const [profile, balance] = result
-  const info = payload({ profile, balance, organizationId: org })
+  const info = payload({ profile: result, organizationId: org })
 
   if (args.json) {
     console.log(JSON.stringify(info, null, 2))

@@ -42,10 +42,9 @@ const model = provider.languageModel("anthropic/claude-sonnet-4")
 ### API Access
 
 ```typescript
-import { fetchProfile, fetchBalance } from "@kilocode/kilo-gateway"
+import { fetchProfile } from "@kilocode/kilo-gateway"
 
 const profile = await fetchProfile(token)
-const balance = await fetchBalance(token)
 ```
 
 ## License

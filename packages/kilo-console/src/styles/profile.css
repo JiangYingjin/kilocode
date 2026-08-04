@@ -159,8 +159,7 @@
   grid-column: 1 / -1;
 }
 
-.kilo-console .profile-account-card,
-.kilo-console .profile-balance-card {
+.kilo-console .profile-account-card {
   min-height: 10rem;
 }
 
@@ -257,15 +256,6 @@
   font-weight: 600;
 }
 
-.kilo-console .profile-balance-card strong {
-  color: var(--foreground);
-  font-size: clamp(2rem, 6vw, 3.25rem);
-  font-weight: 700;
-  letter-spacing: -0.05em;
-  line-height: 0.95;
-}
-
-.kilo-console .profile-balance-card p,
 .kilo-console .profile-login-state p {
   margin: 0;
 }

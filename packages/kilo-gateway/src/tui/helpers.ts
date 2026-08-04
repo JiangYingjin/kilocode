@@ -5,17 +5,13 @@
  * to implement organization selection, profile display, and team management.
  */
 
-import type { KilocodeProfile, KilocodeBalance, Organization } from "../types.js"
+import type { KilocodeProfile, Organization } from "../types.js"
 
 /**
  * Format profile information for display
  * Used by TUI to show profile in dialogs
  */
-export function formatProfileInfo(
-  profile: KilocodeProfile,
-  balance: KilocodeBalance | null,
-  currentOrgId?: string,
-): string {
+export function formatProfileInfo(profile: KilocodeProfile, currentOrgId?: string): string {
   let content = ""
 
   if (profile.name) {
@@ -34,10 +30,6 @@ export function formatProfileInfo(
     }
   } else {
     content += `Team: Personal\n`
-  }
-
-  if (balance && balance.balance !== undefined && balance.balance !== null) {
-    content += `Balance: $${balance.balance.toFixed(2)}\n`
   }
 
   // Add usage details link

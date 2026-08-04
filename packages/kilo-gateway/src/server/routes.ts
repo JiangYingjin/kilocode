@@ -111,10 +111,6 @@ export function createKiloRoutes(deps: KiloRoutesDeps) {
     hasPersonalAccount: z.boolean().optional(),
   })
 
-  const Balance = z.object({
-    balance: z.number(),
-  })
-
   const KiloPassState = z.object({
     currentPeriodBaseCreditsUsd: z.number(),
     currentPeriodUsageUsd: z.number(),
@@ -122,9 +118,8 @@ export function createKiloRoutes(deps: KiloRoutesDeps) {
     nextBillingAt: z.string().nullable().optional(),
   })
 
-  const ProfileWithBalance = z.object({
+  const ProfileResult = z.object({
     profile: Profile,
-    balance: Balance.nullable(),
     kiloPass: KiloPassState.nullable(),
     currentOrgId: z.string().nullable(),
   })
@@ -188,7 +183,7 @@ export function createKiloRoutes(deps: KiloRoutesDeps) {
             description: "Profile data",
             content: {
               "application/json": {
-                schema: resolver(ProfileWithBalance),
+                schema: resolver(ProfileResult),
               },
             },
           },

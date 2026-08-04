@@ -14,10 +14,6 @@ export interface KilocodeNotification {
 }
 
 // Profile types from kilo-gateway
-export interface KilocodeBalance {
-  balance: number
-}
-
 export interface KiloPassState {
   currentPeriodBaseCreditsUsd: number
   currentPeriodUsageUsd: number
@@ -33,7 +29,6 @@ export interface ProfileData {
     selectedOrganizationId?: string
     hasPersonalAccount?: boolean
   }
-  balance: KilocodeBalance | null
   kiloPass: KiloPassState | null
   currentOrgId: string | null
 }

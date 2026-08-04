@@ -11901,9 +11901,6 @@ export type KiloProfileResponses = {
       selectedOrganizationId?: string
       hasPersonalAccount?: boolean
     }
-    balance: {
-      balance: number
-    } | null
     kiloPass: {
       currentPeriodBaseCreditsUsd: number
       currentPeriodUsageUsd: number

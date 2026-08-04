@@ -1091,7 +1091,6 @@ const mockServer = {
       name: "Dev User",
       organizations: [{ id: "org-1", name: "Kilo Org", role: "member" }],
     },
-    balance: { balance: 5.0 },
     currentOrgId: "org-1",
   }),
   deviceAuth: () => ({ status: "idle" as const }),

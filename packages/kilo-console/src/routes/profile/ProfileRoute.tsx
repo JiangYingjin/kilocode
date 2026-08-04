@@ -253,15 +253,6 @@ export function ProfileRoute() {
                   </div>
                 </Card>
 
-                <Card class="profile-card profile-balance-card">
-                  <span class="profile-card-label">Remaining Credits</span>
-                  <strong>{money(info().balance?.balance)}</strong>
-                  <p>
-                    Credits shown for {account(info())}. Switch accounts below to see organization balances when
-                    available.
-                  </p>
-                </Card>
-
                 <Card class="profile-card profile-wide-card">
                   <header class="profile-card-head">
                     <div>

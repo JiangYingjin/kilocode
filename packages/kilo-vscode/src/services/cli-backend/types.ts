@@ -35,13 +35,8 @@ export interface KilocodeProfile {
   hasPersonalAccount?: boolean
 }
 
-export interface KilocodeBalance {
-  balance: number
-}
-
 interface ProfileData {
   profile: KilocodeProfile
-  balance: KilocodeBalance | null
   currentOrgId: string | null
 }
 

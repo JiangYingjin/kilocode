@@ -136,7 +136,7 @@ export function registerKiloCommands(useSDK: () => UseSDK) {
         hidden: !isKiloConnected(),
         run: async () => {
           try {
-            // Fetch profile and balance using server endpoint
+            // Fetch profile using server endpoint
             const response = await sdk.client.kilo.profile()
 
             if (response.error || !response.data) {
@@ -149,10 +149,10 @@ export function registerKiloCommands(useSDK: () => UseSDK) {
               return
             }
 
-            const { profile, balance, currentOrgId } = response.data
+            const { profile, currentOrgId } = response.data
 
             // Show profile dialog with clickable usage link
-            dialog.replace(() => <DialogKiloProfile profile={profile} balance={balance} currentOrgId={currentOrgId} />)
+            dialog.replace(() => <DialogKiloProfile profile={profile} currentOrgId={currentOrgId} />)
           } catch (error) {
             dialog.replace(() => <DialogAlert title="Error" message={`Failed to fetch profile: ${error}`} />)
           }

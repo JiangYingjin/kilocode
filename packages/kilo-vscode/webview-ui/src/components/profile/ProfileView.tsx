@@ -3,7 +3,6 @@ import { Button } from "@kilocode/kilo-ui/button"
 import { Card } from "@kilocode/kilo-ui/card"
 import { Icon } from "@kilocode/kilo-ui/icon"
 import { Select } from "@kilocode/kilo-ui/select"
-import { Tooltip } from "@kilocode/kilo-ui/tooltip"
 import { useVSCode } from "../../context/vscode"
 import { useLanguage } from "../../context/language"
 import { localeToBcp47, type Locale } from "../../context/language-utils"
@@ -46,7 +45,7 @@ const ProfileView: Component<ProfileViewProps> = (props) => {
 
   const personal = createMemo(() => props.profileData?.profile.hasPersonalAccount !== false)
 
-  // Always fetch fresh profile+balance when navigating to this view
+  // Always fetch fresh profile when navigating to this view
   onMount(() => {
     vscode.postMessage({ type: "refreshProfile" })
   })
@@ -98,16 +97,8 @@ const ProfileView: Component<ProfileViewProps> = (props) => {
     vscode.postMessage({ type: "logout" })
   }
 
-  const handleRefresh = () => {
-    vscode.postMessage({ type: "refreshProfile" })
-  }
-
   const handleDashboard = () => {
     vscode.postMessage({ type: "openExternal", url: "https://app.kilo.ai/profile" })
-  }
-
-  const handleTopUp = () => {
-    vscode.postMessage({ type: "openExternal", url: "https://app.kilo.ai/credits" })
   }
 
   const handleGetPass = () => {
@@ -225,89 +216,66 @@ const ProfileView: Component<ProfileViewProps> = (props) => {
                 </Card>
               </Show>
 
-              {/* Balance */}
-              <Show when={data().balance}>
-                {(balance) => (
-                  <Card style={{ display: "flex", "flex-direction": "column", gap: "12px" }}>
-                    <div style={{ display: "flex", "align-items": "center", "justify-content": "space-between" }}>
-                      <div>
-                        <p
-                          style={{
-                            "font-size": "var(--kilo-font-size-11)",
-                            "text-transform": "uppercase",
-                            "letter-spacing": "0.5px",
-                            color: "var(--vscode-descriptionForeground)",
-                            margin: "0 0 4px 0",
-                          }}
-                        >
-                          {language.t("profile.balance.title")}
-                        </p>
-                        <p
-                          style={{
-                            "font-size": "var(--kilo-font-size-18)",
-                            "font-weight": "600",
-                            color: "var(--vscode-foreground)",
-                            margin: 0,
-                          }}
-                        >
-                          {formatBalance(balance().balance)}
-                        </p>
-                      </div>
-                      <Tooltip value={language.t("profile.balance.refresh")} placement="left">
-                        <Button variant="ghost" size="small" onClick={handleRefresh}>
-                          ↻ {language.t("common.refresh")}
-                        </Button>
-                      </Tooltip>
-                    </div>
-
-                    {/* Kilo Pass is part of personal credits, so only show it on the personal account */}
-                    <Show
-                      when={
-                        (data().currentOrgId ?? null) === null && data().profile.hasPersonalAccount !== false
-                          ? data().kiloPass
-                          : null
-                      }
-                    >
-                      {(pass) => (
+              {/* Kilo Pass (personal account only) */}
+              <Show
+                when={
+                  (data().currentOrgId ?? null) === null && data().profile.hasPersonalAccount !== false
+                }
+              >
+                <Card>
+                  <Show when={data().kiloPass}>
+                    {(pass) => (
+                      <div
+                        style={{
+                          display: "flex",
+                          "flex-direction": "column",
+                          gap: "6px",
+                        }}
+                      >
                         <div
                           style={{
-                            "border-top": "1px solid var(--border-weak-base)",
-                            "padding-top": "12px",
                             display: "flex",
-                            "flex-direction": "column",
-                            gap: "6px",
+                            "align-items": "baseline",
+                            "justify-content": "space-between",
+                            "font-size": "var(--kilo-font-size-13)",
                           }}
                         >
+                          <span style={{ "font-weight": "600", color: "var(--vscode-foreground)" }}>Kilo Pass</span>
+                          <span style={{ color: "var(--vscode-descriptionForeground)" }}>
+                            {short(pass().currentPeriodUsageUsd)} / {short(pass().currentPeriodBaseCreditsUsd)}
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            height: "6px",
+                            "border-radius": "3px",
+                            background: "var(--border-weak-base)",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            style={{
+                              height: "100%",
+                              width: `${Math.min(100, (pass().currentPeriodUsageUsd / Math.max(1, pass().currentPeriodBaseCreditsUsd)) * 100)}%`,
+                              background: "var(--vscode-progressBar-background, var(--vscode-button-background))",
+                            }}
+                          />
+                        </div>
+                        <Show when={pass().currentPeriodBonusCreditsUsd > 0}>
                           <div
                             style={{
                               display: "flex",
-                              "align-items": "baseline",
                               "justify-content": "space-between",
-                              "font-size": "var(--kilo-font-size-13)",
+                              "font-size": "var(--kilo-font-size-11)",
+                              color: "var(--vscode-descriptionForeground)",
                             }}
                           >
-                            <span style={{ "font-weight": "600", color: "var(--vscode-foreground)" }}>Kilo Pass</span>
-                            <span style={{ color: "var(--vscode-descriptionForeground)" }}>
-                              {short(pass().currentPeriodUsageUsd)} / {short(pass().currentPeriodBaseCreditsUsd)}
-                            </span>
+                            <span>{language.t("profile.pass.bonus")}</span>
+                            <span>+{formatBalance(pass().currentPeriodBonusCreditsUsd)}</span>
                           </div>
-                          <div
-                            style={{
-                              height: "6px",
-                              "border-radius": "3px",
-                              background: "var(--border-weak-base)",
-                              overflow: "hidden",
-                            }}
-                          >
-                            <div
-                              style={{
-                                height: "100%",
-                                width: `${Math.min(100, (pass().currentPeriodUsageUsd / Math.max(1, pass().currentPeriodBaseCreditsUsd)) * 100)}%`,
-                                background: "var(--vscode-progressBar-background, var(--vscode-button-background))",
-                              }}
-                            />
-                          </div>
-                          <Show when={pass().currentPeriodBonusCreditsUsd > 0}>
+                        </Show>
+                        <Show when={resetLabel(pass().nextBillingAt, language.locale())}>
+                          {(date) => (
                             <div
                               style={{
                                 display: "flex",
@@ -316,72 +284,47 @@ const ProfileView: Component<ProfileViewProps> = (props) => {
                                 color: "var(--vscode-descriptionForeground)",
                               }}
                             >
-                              <span>{language.t("profile.pass.bonus")}</span>
-                              <span>+{formatBalance(pass().currentPeriodBonusCreditsUsd)}</span>
+                              <span>{language.t("profile.pass.renews")}</span>
+                              <span>{date()}</span>
                             </div>
-                          </Show>
-                          <Show when={resetLabel(pass().nextBillingAt, language.locale())}>
-                            {(date) => (
-                              <div
-                                style={{
-                                  display: "flex",
-                                  "justify-content": "space-between",
-                                  "font-size": "var(--kilo-font-size-11)",
-                                  color: "var(--vscode-descriptionForeground)",
-                                }}
-                              >
-                                <span>{language.t("profile.pass.renews")}</span>
-                                <span>{date()}</span>
-                              </div>
-                            )}
-                          </Show>
-                        </div>
-                      )}
-                    </Show>
+                          )}
+                        </Show>
+                      </div>
+                    )}
+                  </Show>
 
-                    {/* No active Kilo Pass on the personal account — nudge to subscribe */}
-                    <Show
-                      when={
-                        (data().currentOrgId ?? null) === null &&
-                        data().profile.hasPersonalAccount !== false &&
-                        !data().kiloPass
-                      }
+                  {/* No active Kilo Pass on the personal account — nudge to subscribe */}
+                  <Show when={!data().kiloPass}>
+                    <div
+                      style={{
+                        "padding-top": "4px",
+                      }}
                     >
-                      <div
+                      <button
+                        type="button"
+                        onClick={handleGetPass}
                         style={{
-                          "border-top": "1px solid var(--border-weak-base)",
-                          "padding-top": "12px",
+                          background: "none",
+                          border: 0,
+                          padding: 0,
+                          "font-size": "var(--kilo-font-size-13)",
+                          "font-family": "inherit",
+                          color: "var(--vscode-textLink-foreground)",
+                          cursor: "pointer",
+                          "text-align": "left",
                         }}
                       >
-                        <button
-                          type="button"
-                          onClick={handleGetPass}
-                          style={{
-                            background: "none",
-                            border: 0,
-                            padding: 0,
-                            "font-size": "var(--kilo-font-size-13)",
-                            "font-family": "inherit",
-                            color: "var(--vscode-textLink-foreground)",
-                            cursor: "pointer",
-                            "text-align": "left",
-                          }}
-                        >
-                          {language.t("profile.pass.subscribe")}
-                        </button>
-                      </div>
-                    </Show>
-                  </Card>
-                )}
+                        {language.t("profile.pass.subscribe")}
+                      </button>
+                    </div>
+                  </Show>
+                </Card>
               </Show>
 
               {/* Action buttons */}
               <div style={{ display: "flex", gap: "8px" }}>
                 <Button variant="secondary" onClick={handleDashboard} style={{ flex: "1" }}>
                   {language.t("profile.action.dashboard")}
-                </Button>
-                <Button variant="secondary" onClick={handleTopUp} style={{ flex: "1" }}>
-                  {language.t("profile.action.topUp")}
                 </Button>
                 <Button
                   variant="ghost"

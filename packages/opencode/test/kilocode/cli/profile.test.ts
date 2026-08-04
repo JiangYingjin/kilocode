@@ -3,16 +3,15 @@ import { describe, expect, test } from "bun:test"
 import { format, handle, payload } from "../../../src/kilocode/cli/cmd/profile"
 
 describe("profile CLI formatting", () => {
-  test("formats personal balance for human output", () => {
+  test("formats personal profile for human output", () => {
     expect(
       format({
         name: null,
         email: "one@example.com",
         team: "Personal",
         organizationId: null,
-        balance: 12.345,
       }),
-    ).toBe("Email: one@example.com\nTeam: Personal\nBalance: $12.35")
+    ).toBe("Email: one@example.com\nTeam: Personal")
   })
 
   test("formats profile name for human output", () => {
@@ -22,9 +21,8 @@ describe("profile CLI formatting", () => {
         email: "one@example.com",
         team: "Team One",
         organizationId: "org-1",
-        balance: 7,
       }),
-    ).toBe("Name: User One\nEmail: one@example.com\nTeam: Team One\nBalance: $7.00")
+    ).toBe("Name: User One\nEmail: one@example.com\nTeam: Team One")
   })
 
   test("creates JSON payload", () => {
@@ -35,7 +33,6 @@ describe("profile CLI formatting", () => {
           email: "one@example.com",
           organizations: [{ id: "org-1", name: "Team One", role: "admin" }],
         },
-        balance: { balance: 3.5 },
         organizationId: "org-1",
       }),
     ).toEqual({
@@ -43,7 +40,6 @@ describe("profile CLI formatting", () => {
       email: "one@example.com",
       team: "Team One",
       organizationId: "org-1",
-      balance: 3.5,
     })
   })
 
@@ -61,13 +57,12 @@ describe("profile CLI formatting", () => {
         json: false,
         getAuth: async () => ({ type: "oauth", refresh: "refresh", access: "token", expires: 1 }),
         getProfile: async () => ({ email: "one@example.com", name: "User One" }),
-        getBalance: async () => ({ balance: 4 }),
       })
     } finally {
       process.stdout.write = write
     }
 
-    expect(logs.join("")).toBe("Name: User One\nEmail: one@example.com\nTeam: Personal\nBalance: $4.00\n")
+    expect(logs.join("")).toBe("Name: User One\nEmail: one@example.com\nTeam: Personal\n")
   })
 
   test("handles profile fetch errors without throwing", async () => {
@@ -82,7 +77,6 @@ describe("profile CLI formatting", () => {
       getProfile: async () => {
         throw new Error("Invalid token")
       },
-      getBalance: async () => ({ balance: 4 }),
     })
 
     expect(errors).toEqual(["Invalid token"])

@@ -25,12 +25,9 @@ export { migrateLegacyKiloAuth, LEGACY_CONFIG_PATH } from "./auth/legacy-migrati
 // ============================================================================
 export {
   fetchProfile,
-  fetchBalance,
-  fetchProfileWithBalance,
   fetchDefaultModel,
   getKiloProfile,
   defaultOrganizationId,
-  getKiloBalance,
   getKiloDefaultModel,
   promptOrganizationSelection,
 } from "./api/profile.js"
@@ -108,7 +105,6 @@ export type {
   DeviceAuthPollResponse,
   Organization,
   KilocodeProfile,
-  KilocodeBalance,
   KiloPassState,
   PollOptions,
   PollResult,

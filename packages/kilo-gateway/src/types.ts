@@ -31,10 +31,6 @@ export interface KilocodeProfile {
   hasPersonalAccount?: boolean
 }
 
-export interface KilocodeBalance {
-  balance: number
-}
-
 export interface KiloPassState {
   currentPeriodBaseCreditsUsd: number
   currentPeriodUsageUsd: number
